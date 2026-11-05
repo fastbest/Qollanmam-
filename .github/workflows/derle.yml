@@ -1,0 +1,42 @@
+name: APK derle (zip)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "CevrimdisiRehber-APK-projesi.zip"
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zip'i aç
+        run: |
+          mkdir proje
+          unzip -q CevrimdisiRehber-APK-projesi.zip -d proje
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: APK derle
+        working-directory: proje
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: Dosya adını düzelt
+        run: cp proje/app/build/outputs/apk/release/app-release.apk CevrimdisiRehberim.apk
+
+      - name: APK'yı yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: CevrimdisiRehberim-apk
+          path: CevrimdisiRehberim.apk
+          retention-days: 30
